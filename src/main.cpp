@@ -8,65 +8,12 @@
 //not backwards and forwards is flipped
 
 uint16_t amplitudes[3];
-int16_t distances[3];
+int16_t distances[3]={0,0,0};
 OPT3101 sensor;
-
-void motorTask(void* nth){
-  while (true)
-  {
-    if(distances[1] < 100 && distances[0] < 100+20 && distances[2] < 100+20) {
-      motorobject.set_speed(MotorA, Forward, 0);
-      motorobject.set_speed(MotorB, Backward, 0);
-    }else if(distances[1] < 100 && distances[0] < 100+20 ){
-      motorobject.set_speed(MotorA, Backward, 150);
-      motorobject.set_speed(MotorB, Forward, 150);
-      delay(4725/2);
-    }else if(distances[1] < 100 && distances[2] < 100+20 ){
-      motorobject.set_speed(MotorA, Forward, 150);
-      motorobject.set_speed(MotorB, Backward, 150);
-      delay(4725/2);
-    }else if(distances[1] < 100){
-      motorobject.set_speed(MotorA, Backward, 150);
-      motorobject.set_speed(MotorB, Forward, 150);
-      delay(4725);
-    }
-    else{
-      motorobject.set_speed(MotorA, Backward, 150);
-      motorobject.set_speed(MotorB, Backward, 150);
-    }
-    delay(50);
-  }
-  vTaskDelete(NULL);
-}
-void sensingTask(void* nth){
-  while (true)
-  {
-    if (sensor.isSampleDone())
-      {
-        sensor.readOutputRegs();
-
-        amplitudes[sensor.channelUsed] = sensor.amplitude;
-        distances[sensor.channelUsed] = sensor.distanceMillimeters;
-
-        if (sensor.channelUsed == 2)
-        {
-            Serial.print("left:  " + String(distances[0]/10.0) + "cm, " );
-            Serial.print("front: " + String(distances[1]/10.0) + "cm, " );
-            Serial.println("right: " + String(distances[2]/10.0) + "cm " ); 
-            //awsobject.publishMessage(distances);       
-        }
-        sensor.nextChannel();
-        sensor.startSample();
-    }
-    delay(500);
-  }
-  vTaskDelete(NULL);
-
-}
 
 void setup(){
 
-pinMode(LED_BOARD, OUTPUT);
+  pinMode(LED_BOARD, OUTPUT);
   Serial.begin(115200);
   motorobject.SETUP();  
   
@@ -86,15 +33,39 @@ pinMode(LED_BOARD, OUTPUT);
   sensor.startSample();
 
   //inisticate the AWS class
-  // awsobject.connectAWS();
-  // awsobject.stayConnected();
-  xTaskCreate(sensingTask,"SensorTaskFunc",2*1024,NULL,2,NULL);
-  delay(1000);
-  xTaskCreate(motorTask,"MotorTaskFunc",2*1024,NULL,1,NULL);
+  awsobject.connectAWS();
+
 
 }
 
 void loop(){
-  delay(500);
+  motorobject.set_speed(MotorA, Backward, 0);
+  motorobject.set_speed(MotorB, Backward, 0);
+  awsobject.stayConnected();
+
+  // if (sensor.isSampleDone())
+  //   {
+  //     sensor.readOutputRegs();
+
+  //     amplitudes[sensor.channelUsed] = sensor.amplitude;
+  //     distances[sensor.channelUsed] = sensor.distanceMillimeters;
+
+  //     if (sensor.channelUsed == 2)
+  //     {
+
+  //         Serial.print("left:  " + String(distances[0]/10.0) + "cm, " );
+  //         Serial.print("front: " + String(distances[1]/10.0) + "cm, " );
+  //         Serial.println("left: " + String(distances[1]/10.0) + "cm " ); 
+  //         //awsobject.publishMessage(distances); Won't publish anythoing to AWS       
+  //     }
+  //     sensor.nextChannel();
+  //     sensor.startSample();
+  //   }
+
+  //awsobject.publishMessage(distances);
+  //awsobject.publishMessage(distances);
+
+  
+   delay(10);
 }
 

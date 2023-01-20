@@ -31,7 +31,8 @@
 
 /* The MQTT topics that this device should publish/subscribe to */
 #define AWS_IOT_PUBLISH_TOPIC   "greengrass/group05" 
-#define AWS_IOT_SUBSCRIBE_TOPIC "greengrass/group05"
+#define AWS_IOT_SUBSCRIBE_TOPIC1 "esp32/rover"
+#define AWS_IOT_SUBSCRIBE_TOPIC2 "esp32/target"
 
 WiFiClientSecure net = WiFiClientSecure();
 MQTTClient client = MQTTClient(256);
@@ -92,7 +93,8 @@ void myawsclass::connectAWS() {
   }
 
   /* Subscribe to a topic */
-  client.subscribe(AWS_IOT_SUBSCRIBE_TOPIC);
+  client.subscribe(AWS_IOT_SUBSCRIBE_TOPIC1);
+  //client.subscribe(AWS_IOT_SUBSCRIBE_TOPIC2);
 
   Serial.println("AWS IoT Connected!");
 }
