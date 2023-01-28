@@ -13,8 +13,8 @@ class configureCamera:
 
 	camera_path ='exampleCamera.yml'
 	out_path ='image_test.jpg'
-	camera_width=640 #1280x720 or 640x360
-	camera_height=360 #720 
+	camera_width=1920#640 #1280x720 or 640x360
+	camera_height=1080#360 #720 
 	def __init__(self, camera_resource=0):
 		self.__camera_resource = camera_resource
 		

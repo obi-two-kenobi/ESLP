@@ -234,6 +234,9 @@ if __name__ == "__main__":
 			myAWSIoTMQTTClient.publish(topic_rover, mes_rover, 1)	
 			mes_target = json.dumps({'target': '{}'.format(current_target_coordinate)})		
 			myAWSIoTMQTTClient.publish(topic_targer, mes_target, 1)	
+			mes_obs = json.dumps({'obstacles': '{}'.format(obstacles_scenario)})	
+			myAWSIoTMQTTClient.publish("esp32/pathFinder", mes_obs, 1)
+			
 			#print("publishing")
 		
 		end=time.time()
