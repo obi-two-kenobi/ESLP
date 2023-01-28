@@ -13,6 +13,16 @@
 
 #include <MQTTClient.h>
 
+struct target{
+  int x;
+  int y;
+};
+struct rover{
+  int x;
+  int y;
+  int deg;
+};
+
 void messageHandler(String, String);
 class myawsclass {
   public:
