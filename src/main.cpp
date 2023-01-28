@@ -66,15 +66,15 @@ void loop(){
     {
       sensor.readOutputRegs();
 
-      amplitudes[sensor.channelUsed] = sensor.amplitude;
+      amplitudes[sensor.channelUsed] = sensor.amplitude; 
       distances[sensor.channelUsed] = sensor.distanceMillimeters;
 
       if (sensor.channelUsed == 2)
       {
 
-          // Serial.print("left:  " + String(distances[0]/10.0) + "cm, " );
-          // Serial.print("front: " + String(distances[1]/10.0) + "cm, " );
-          // Serial.println("left: " + String(distances[1]/10.0) + "cm " ); 
+          Serial.print("left:  " + String(distances[0]/10.0) + "cm, " );
+          Serial.print("front: " + String(distances[1]/10.0) + "cm, " );
+          Serial.println("left: " + String(distances[1]/10.0) + "cm " ); 
           //awsobject.publishMessage(distances); Won't publish anythoing to AWS       
       }
       sensor.nextChannel();
@@ -107,6 +107,7 @@ void loop(){
 
     delay(1);
   }
+
   else if(correctionAngle < -1*angleThreshold){
     motorobject.set_speed(MotorA, Forward, rotationSpeed);
     motorobject.set_speed(MotorB, Backward, rotationSpeed);

@@ -1,11 +1,4 @@
-
-This directory is intended for PlatformIO Unit Testing and project tests.
-
-Unit Testing is a software testing method by which individual units of
-source code, sets of one or more MCU program modules together with associated
-control data, usage procedures, and operating procedures, are tested to
-determine whether they are fit for use. Unit testing finds problems early
-in the development cycle.
-
-More information about PlatformIO Unit Testing:
-- https://docs.platformio.org/page/plus/unit-testing.html
+### TO DO
+1. Create a python path finding algorithm that will read the rover location, target location, obsticale locations from the existing code.
+2. the new python file will calculate waypoints 
+3. these waypoints will be read as target by the rover and move towards it.
