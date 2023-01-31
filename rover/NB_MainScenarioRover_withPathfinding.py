@@ -57,7 +57,6 @@ import json
 #-----------------------------------------------------------------
 myScenarioConfig=configureSystem.configureScenario() #use this object to apply the configurations 
 													 #of the system in the configureSystem.py 
-							 
 myAWSConfig=configureSystem.configureAWS()													 
 host = myAWSConfig.get_aws_host()
 rootCAPath = myAWSConfig.get_root_file()
@@ -67,7 +66,7 @@ clientId = myAWSConfig.get_thing_name()
 topic_rover = myAWSConfig.get_topic("rover")
 topic_targer = myAWSConfig.get_topic("target")
 useWebsocket=myAWSConfig.useWebsocket
-
+pathfinderMargin = 20
 
 ## Class for obstacles
 class Obstacle:
@@ -119,7 +118,7 @@ class PathFinding:
 
     def checkCaughtWaypoint(self, target, rover):
         ''' Checks if the rover is in the target area. Returns True if it is, False if not'''
-        if self.getVectorLength(self.getVector(target, rover)) < 10:
+        if self.getVectorLength(self.getVector(target, rover)) < pathfinderMargin:
             return True
         else:
             return False
@@ -184,6 +183,7 @@ class PathFinding:
                 try:
                     bestVertex = min(vertexScores)[1]
                 except:
+                    bestVertex = 0
                     print("no obstacles in the way")
                 print("optimal vertex to navigate around obstacle is:" + str(obstacle.navMatrix[bestVertex]))
 
@@ -355,9 +355,13 @@ if __name__ == "__main__":
 
 		if targets_scenario:
 			warped,target_list, current_target_coordinate =myTargets.draw_current_target(warped) #draws the obstacle from the image scenario
-			directConnection = Straight(PathFinding.getVector(PathFinding, my_rover_coordinates[int(rover_id)][0], current_target_coordinate), my_rover_coordinates[int(rover_id)][0], PathFinding.getVectorLength(PathFinding, PathFinding.getVector(PathFinding, my_rover_coordinates[int(rover_id)][0], current_target_coordinate)))
-			path = pathfinding.findPath(my_rover_coordinates[int(rover_id)][0], current_target_coordinate, directConnection ,list_of_obstacles) #finds the path to the target
-			nextWaypoint = path[0]
+			try:
+				directConnection = Straight(PathFinding.getVector(PathFinding, my_rover_coordinates[int(rover_id)][0], current_target_coordinate), my_rover_coordinates[int(rover_id)][0], PathFinding.getVectorLength(PathFinding, PathFinding.getVector(PathFinding, my_rover_coordinates[int(rover_id)][0], current_target_coordinate)))
+				path = pathfinding.findPath(my_rover_coordinates[int(rover_id)][0], current_target_coordinate, directConnection ,list_of_obstacles) #finds the path to the target
+				nextWaypoint = path[0]
+				continue_path = False
+			except:
+				print("no path found")
 			if my_rover_coordinates:
 				try:
 					continue_game=myTargets.check_caught(target_list, my_rover_coordinates[int(rover_id)][0]) 
@@ -367,12 +371,15 @@ if __name__ == "__main__":
 						
 			if continue_path:
 				path.pop(0)
+				#current_target_coordinate = path[0]
 			#print("Target:", current_target_coordinate," my rover: ", my_rover_coordinates) #prints {"markerID":[(x coord,y coord), angle]} of the rover in the rectified ROI image
+		for i in range(len(path)-1):
+			cv2.line(warped, (int(path[i][0]), int(path[i][1])), (int(path[i+1][0]), int(path[i+1][1])), (0, 0, 255), 2)
 		cv2.imshow("Rectified", warped) #uncomment
 		if connect_to_aws:
 			mes_rover = json.dumps({'rover': '{}'.format(my_rover_coordinates)})		
 			myAWSIoTMQTTClient.publish(topic_rover, mes_rover, 1)	
-			mes_target = json.dumps({'target': '{}'.format(current_target_coordinate)})		
+			mes_target = json.dumps({'target': '{}'.format(path[0])})		
 			myAWSIoTMQTTClient.publish(topic_targer, mes_target, 1)	
 			mes_obs = json.dumps({'obstacles': '{}'.format(obstacles_scenario)})	
 			myAWSIoTMQTTClient.publish("esp32/pathFinder", mes_obs, 1)

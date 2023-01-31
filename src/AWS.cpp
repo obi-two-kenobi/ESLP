@@ -86,8 +86,8 @@ void messageHandler(String &topic, String &payload) {
   LinearDistance = sqrt(pow(mytarger.x - roverLoc.x, 2) + pow(mytarger.y - roverLoc.y, 2));
 
   //publish for debugging; remove it later.
-  int16_t p[3] = {correctionAngle, LinearDistance, correctionAngle};
-  awsobject.publishMessage(p);
+  // int16_t p[3] = {correctionAngle, LinearDistance, correctionAngle};
+  // awsobject.publishMessage(p);
 }
 
 void myawsclass::stayConnected() {
@@ -147,6 +147,15 @@ void myawsclass::publishMessage(int16_t sensorValue[3]) {
   doc["x"] = sensorValue[0];
   doc["y"] = sensorValue[1];
   doc["z"] = sensorValue[2];
+  char jsonBuffer[512];
+  serializeJson(doc, jsonBuffer); /* print to client */
+
+  client.publish("esp32/correction", jsonBuffer);
+}
+void myawsclass::publishMessage(String msg) {
+  StaticJsonDocument<200> doc;
+  //doc["time"] = millis();
+  doc["msg"] = msg;
   char jsonBuffer[512];
   serializeJson(doc, jsonBuffer); /* print to client */
 

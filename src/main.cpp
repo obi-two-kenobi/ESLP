@@ -72,13 +72,37 @@ void loop(){
       if (sensor.channelUsed == 2)
       {
 
-          Serial.print("left:  " + String(distances[0]/10.0) + "cm, " );
-          Serial.print("front: " + String(distances[1]/10.0) + "cm, " );
-          Serial.println("left: " + String(distances[1]/10.0) + "cm " ); 
-          //awsobject.publishMessage(distances); Won't publish anythoing to AWS       
+        Serial.print("left:  " + String(distances[0]/10.0) + "cm, " );
+        Serial.print("front: " + String(distances[1]/10.0) + "cm, " );
+        Serial.println("right: " + String(distances[2]/10.0) + "cm " ); 
+        //awsobject.publishMessage(distances); //publish to AWS       
       }
       sensor.nextChannel();
       sensor.startSample();
+    }
+    if(distances[0] < 50 && distances[0] > 0){
+      //awsobject.publishMessage(String("distance 0"));
+      motorobject.set_speed(MotorA, Forward, 120);
+      motorobject.set_speed(MotorB, Forward, 120);
+      delay(300);
+      motorobject.set_speed(MotorA, Forward, 120);
+      motorobject.set_speed(MotorB, Backward, 120);
+      delay(300);
+      motorobject.set_speed(MotorA, Backward, 120);
+      motorobject.set_speed(MotorB, Backward, 120);
+      delay(300);
+
+    }else if(distances[2] < 50 && distances[2] > 0){
+      //awsobject.publishMessage(String("distance 1"));
+      motorobject.set_speed(MotorA, Forward, 120);
+      motorobject.set_speed(MotorB, Forward, 120);
+      delay(300);
+      motorobject.set_speed(MotorA, Backward, 120);
+      motorobject.set_speed(MotorB, Forward, 120);
+      delay(300);
+      motorobject.set_speed(MotorA, Backward, 120);
+      motorobject.set_speed(MotorB, Backward, 120);
+      delay(300);
     }
     
 
@@ -86,10 +110,10 @@ void loop(){
   //awsobject.publishMessage(distances);
 
   auto rotationSpeed = (abs(correctionAngle)/180.0)*255;
-  rotationSpeed = (rotationSpeed < 70) ? 70 : rotationSpeed;
+  rotationSpeed = (rotationSpeed < 100) ? 100 : rotationSpeed;
 
   auto movmentSpeed = (abs(LinearDistance)/100.0)*255;
-  movmentSpeed = (movmentSpeed < 70) ? 70 : movmentSpeed;
+  movmentSpeed = (movmentSpeed < 100) ? 100 : movmentSpeed;
 
   auto angleThreshold = 5;
 

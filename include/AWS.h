@@ -30,6 +30,7 @@ class myawsclass {
 
     void connectAWS();                            /* Initialize and connect to AWS */
     void publishMessage(int16_t sensorValue[3]);     /* Publish the values of the sensors */
+    void publishMessage(String msg);
     void stayConnected();                         /* Maintain the connection */
 };
 

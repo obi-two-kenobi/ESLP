@@ -311,7 +311,6 @@ if __name__ == "__main__":
 				warped,target_list, current_target_coordinate =myTargets.draw_current_target(warped) #draws the obstacle from the image scenario
 			else:
 			 	warped,_, current_target_coordinate =myTargets.draw_current_target(warped) #draws the obstacle from the image scenario
-
 			if my_rover_coordinates:
 				try:
 					continue_game=myTargets.check_caught(target_list, my_rover_coordinates[int(rover_id)][0]) 
