@@ -51,6 +51,8 @@ import shapedetector
 import configureSystem
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 import json
+import networkx as nx
+import math
 
 #*** SYSTEM CONFIGURATION
 #-----------------------------------------------------------------
@@ -66,7 +68,7 @@ clientId = myAWSConfig.get_thing_name()
 topic_rover = myAWSConfig.get_topic("rover")
 topic_targer = myAWSConfig.get_topic("target")
 useWebsocket=myAWSConfig.useWebsocket
-											 
+doneBefore=False											 
 
 def connect_aws():
 
@@ -116,6 +118,92 @@ def capture_image():
 		img = cv2.resize(img, (0, 0),fx=resize_ratio,fy=resize_ratio,interpolation=cv2.INTER_AREA)
 	return img, resize_ratio
 
+########################################################################################################################################
+########################################################################################################################################
+
+
+def find_shortest_path_2l_with_points(img, start, end, blocked_points):
+    # Create a graph representation of the image, where each pixel is a node and edges are created between neighboring pixels
+    G = nx.Graph()
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            G.add_node((x, y))
+
+    # Get all the points within the blocked circle
+    blocked_points = set()
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            for bx, by in blocked_points:
+                if ((x - bx) ** 2 + (y - by) ** 2) <= (35 ** 2):
+                    blocked_points.add((x, y))
+                    break
+
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
+                new_x, new_y = x + dx, y + dy
+                if 0 <= new_x < img.shape[0] and 0 <= new_y < img.shape[1]:
+                    if (new_x, new_y) not in blocked_points:
+                        G.add_edge((x, y), (new_x, new_y))
+
+    # Create a heuristic function that estimates the cost of moving from one pixel to another
+    def heuristic(a, b):
+        # Use the Manhattan distance as the heuristic
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    # Use the A* algorithm to find the shortest path from the starting point to the end point using the heuristic
+    path = nx.astar_path(G, start, end, heuristic)
+
+    line1_start, line1_end = path[0], path[len(path)//2]
+    line2_start, line2_end = path[len(path)//2], path[-1]
+
+    # Draw the path on the original image
+    cv2.line(img, line1_start, line1_end, (0, 0, 255), 2)
+    cv2.line(img, line2_start, line2_end, (0, 0, 255), 2)
+
+    return img, (line1_start, line1_end), (line2_start, line2_end)
+
+def find_shortest_path_2gl_with_points(img, start, end, blocked_points):
+    # Create a graph representation of the image, where each pixel is a node and edges are created between neighboring pixels
+    G = nx.Graph()
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            G.add_node((x, y))
+
+    # Get all the points within the blocked circle
+    blocked_points = set()
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            for bx, by in blocked_points:
+                if ((x - bx) ** 2 + (y - by) ** 2) <= (18 ** 2):
+                    blocked_points.add((x, y))
+                    break
+
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
+                new_x, new_y = x + dx, y + dy
+                if 0 <= new_x < img.shape[0] and 0 <= new_y < img.shape[1]:
+                    if (new_x, new_y) not in blocked_points:
+                        G.add_edge((x, y), (new_x, new_y))
+
+    # Use breadth-first search to find a path from the starting point to the end point
+    path = nx.bfs_path(G, start, end)
+
+    line1_start, line1_end = path[0], path[len(path)//2]
+    line2_start, line2_end = path[len(path)//2], path[-1]
+
+    # Draw the path on the original image
+    cv2.line(img, line1_start, line1_end, (0, 0, 255), 2)
+    cv2.line(img, line2_start, line2_end, (0, 0, 255), 2)
+
+    return img, (line1_start, line1_end), (line2_start, line2_end)
+
+
+
+
+########################################################################################################################################
+########################################################################################################################################
 	
 if __name__ == "__main__":
 	#Requires the image of the scenario as input
@@ -219,15 +307,42 @@ if __name__ == "__main__":
 			warped=myObstacles.draw_obstacles(warped, obstacle_coord) #draws the obstacle from the image scenario
 																			#in its equivalent position in the rectified ROI 																
 		if targets_scenario:
-			warped,target_list, current_target_coordinate =myTargets.draw_current_target(warped) #draws the obstacle from the image scenario
-					
+			if doneBefore==False: # get the whole target list only once then it's edited by path finder 
+				warped,target_list, current_target_coordinate =myTargets.draw_current_target(warped) #draws the obstacle from the image scenario
+			else:
+			 	warped,_, current_target_coordinate =myTargets.draw_current_target(warped) #draws the obstacle from the image scenario
+
 			if my_rover_coordinates:
 				try:
 					continue_game=myTargets.check_caught(target_list, my_rover_coordinates[int(rover_id)][0]) 
 				except:
-					print ("no rover_marker in image")														
+					print ("not cauht")														
 						
 				#print("Target:", current_target_coordinate," my rover: ", my_rover_coordinates) #prints {"markerID":[(x coord,y coord), angle]} of the rover in the rectified ROI image
+		
+		try:
+			 if doneBefore==False:
+					warped,firstLine,SecondLine = find_shortest_path_2l_with_points(warped, my_rover_coordinates[29][0], current_target_coordinate, obstacles_scenario)
+					print("rover location: ", my_rover_coordinates[int(rover_id)][0] ,"firstPoint:", [firstLine[1],False], " secondPoint:", [SecondLine[1],False], " = Target:", current_target_coordinate)
+				#remove the first point from target_list and instead of it add the two points from the path finder
+					target_list.pop(0)
+					target_list.insert(0,[firstLine[1],True])
+					target_list.insert(1,[SecondLine[1],False])
+
+					warped,firstLine,SecondLine = find_shortest_path_2l_with_points(warped, SecondLine[1], target_list[2][0], obstacles_scenario)
+					target_list.pop(2)
+					target_list.insert(2,[firstLine[1],False])
+					target_list.insert(3,[SecondLine[1],False])
+
+					warped,firstLine,SecondLine = find_shortest_path_2l_with_points(warped, SecondLine[1], target_list[4][0], obstacles_scenario)
+					target_list.pop(4)
+					target_list.insert(4,[firstLine[1],False])
+					target_list.insert(5,[SecondLine[1],False])
+					doneBefore=True
+		except:
+			print ("no rover_marker in image")
+
+
 		cv2.imshow("Rectified", warped) #uncomment
 		if connect_to_aws:
 			mes_rover = json.dumps({'rover': '{}'.format(my_rover_coordinates)})		

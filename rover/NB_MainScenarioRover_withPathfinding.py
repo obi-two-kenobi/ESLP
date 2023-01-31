@@ -342,14 +342,18 @@ if __name__ == "__main__":
 				
 		my_rover_coordinates=(marker.get_markers_info(warped)) #detects the markers in the rectified ROI image 
 		myStart.draw_start(warped,start_point[0])	#draw the starting point for the rover	
+		list_of_obstacles  = []
 		#iterates through the coordinates of the recognized obstacles in the image scenario
 		for obstacle_coord in obstacles_scenario:
 			warped=myObstacles.draw_obstacles(warped, obstacle_coord) #draws the obstacle from the image scenario
-																			#in its equivalent position in the rectified ROI 																
+																			#in its equivalent position in the rectified ROI
+																			# 
+			obsct_obj = Obstacle(obstacle_coord[0], obstacle_coord[1],30,30) #creates an object of the class Obstacle
+			list_of_obstacles.append(obsct_obj) #appends the object to a list
 		if targets_scenario:
 			warped,target_list, current_target_coordinate =myTargets.draw_current_target(warped) #draws the obstacle from the image scenario
 			directConnection = Straight(PathFinding.getVector(PathFinding, my_rover_coordinates[int(rover_id)][0], current_target_coordinate), my_rover_coordinates[int(rover_id)][0], PathFinding.getVectorLength(PathFinding, PathFinding.getVector(PathFinding, my_rover_coordinates[int(rover_id)][0], current_target_coordinate)))
-			path = pathfinding.findPath(my_rover_coordinates[int(rover_id)][0], current_target_coordinate, directConnection ,obstacles_scenario) #finds the path to the target
+			path = pathfinding.findPath(my_rover_coordinates[int(rover_id)][0], current_target_coordinate, directConnection ,list_of_obstacles) #finds the path to the target
 			nextWaypoint = path[0]
 			if my_rover_coordinates:
 				try:
