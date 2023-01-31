@@ -94,7 +94,7 @@ class Obstacle:
         ## 0                    1
 
         self.collisionMatrix = [(x-width/2, y-height/2), (x+width/2, y-height/2), (x+width/2, y+height/2), (x-width/2, y+height/2)]
-        self.navMatrix = [(x-width/2 - 1, y-height/2 - 1), (x+width/2 +1 , y-height/2 -1), (x+width/2 +1, y+height/2 +1 ), (x-width/2 -1 , y+height/2 +1)]
+        self.navMatrix = [(x-width/2 - 10, y-height/2 - 10), (x+width/2 +10 , y-height/2 -10), (x+width/2 +10, y+height/2 +10 ), (x-width/2 -10 , y+height/2 +10)]
         
         ## generate side vectors + origins
         for i in range(0,4):
@@ -346,10 +346,10 @@ if __name__ == "__main__":
 		#iterates through the coordinates of the recognized obstacles in the image scenario
 		for obstacle_coord in obstacles_scenario:
 			warped=myObstacles.draw_obstacles(warped, obstacle_coord) #draws the obstacle from the image scenario
-																			#in its equivalent position in the rectified ROI
-																			# 
-			obsct_obj = Obstacle(obstacle_coord[0], obstacle_coord[1],30,30) #creates an object of the class Obstacle
-			list_of_obstacles.append(obsct_obj) #appends the object to a list
+																			#in its equivalent position in the rectified ROI 
+			obst_obj = Obstacle(obstacle_coord[0], obstacle_coord[1],30,30) #creates an object of the class Obstacle
+			list_of_obstacles.append(obst_obj) #appends the object to a list
+
 		if targets_scenario:
 			warped,target_list, current_target_coordinate =myTargets.draw_current_target(warped) #draws the obstacle from the image scenario
 			directConnection = Straight(PathFinding.getVector(PathFinding, my_rover_coordinates[int(rover_id)][0], current_target_coordinate), my_rover_coordinates[int(rover_id)][0], PathFinding.getVectorLength(PathFinding, PathFinding.getVector(PathFinding, my_rover_coordinates[int(rover_id)][0], current_target_coordinate)))
