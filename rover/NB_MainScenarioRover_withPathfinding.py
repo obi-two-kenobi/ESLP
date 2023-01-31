@@ -181,7 +181,10 @@ class PathFinding:
                             distanceFromOrigin = self.getVectorLength(self.getVector(start, obstacle.navMatrix[index]))
                             distanceToTarget = self.getVectorLength(self.getVector(obstacle.navMatrix[index], end))
                             vertexScores.append((distanceFromOrigin + distanceToTarget, index))
-                bestVertex = min(vertexScores)[1]
+                try:
+                    bestVertex = min(vertexScores)[1]
+                except:
+                    print("no obstacles in the way")
                 print("optimal vertex to navigate around obstacle is:" + str(obstacle.navMatrix[bestVertex]))
 
                 ## add the optimal vertex to the path
