@@ -231,6 +231,7 @@ if __name__ == "__main__":
 
 	image_scenario, obstacles_scenario, targets_scenario, start_point=sd.get_shapes_coordinates(image_scenario)
 	cv2.imshow("Image_scenario", image_scenario)
+	print("image_scenario_size: ",image_scenario.shape[1::-1])
 	size_image_virtual_scenario=tuple(image_scenario.shape[1::-1])
 	print("image_virtual_scenario_size: ",size_image_virtual_scenario)	
 	print ("detected obstacles in scenario: ", obstacles_scenario)
