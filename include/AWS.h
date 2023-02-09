@@ -13,13 +13,12 @@
 
 #include <MQTTClient.h>
 
-struct target{
+struct coordinate{
   int x;
   int y;
 };
-struct rover{
-  int x;
-  int y;
+
+struct coordinatesWithAngle: coordinate{
   int deg;
 };
 
